@@ -224,6 +224,8 @@ void OpenDataTreeProducerOptimized::beginJob() {
     c2numpy_addcolumn(&writer, "jet_E", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "jet_area", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "jet_jes", C2NUMPY_FLOAT64);
+    c2numpy_addcolumn(&writer, "gen_pt", C2NUMPY_FLOAT64);
+    c2numpy_addcolumn(&writer, "jet_gen_dr", C2NUMPY_FLOAT64);
 
     c2numpy_addcolumn(&writer, "chf", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "nhf", C2NUMPY_FLOAT64);
@@ -485,13 +487,21 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
     // value (std::pair<PFJet*, double>) is pair of original jet iterator and corresponding JEC factor
     std::map<double, std::pair<reco::PFJetCollection::const_iterator, double> > sortedJets;
     for (auto i_jet_orig = jet_handle->begin(); i_jet_orig != jet_handle->end(); ++i_jet_orig) {
+        auto p4 = i_jet_orig->p4();
+        jet_pt[index]  = p4.Pt();
+        jet_eta[index] = p4.Eta();
+        jet_phi[index] = p4.Phi();
+        jet_E[index]   = p4.E();
+
         // take jet energy correction and get corrected pT
         jec = corrector->correction(*i_jet_orig, event_obj, iSetup);
         // Multiply pT by -1 in order to have largest pT jet first (sorted in ascending order by default)
         sortedJets.insert(std::pair<double, std::pair<reco::PFJetCollection::const_iterator, double> >(-1 * i_jet_orig->pt() * jec, std::pair<reco::PFJetCollection::const_iterator, double>(i_jet_orig, jec)));
+        index++;
     }
 
     // // Iterate over the jets (sorted in pT) of the event
+    index = 0;
     for (auto i_jet_orig = sortedJets.begin(); i_jet_orig != sortedJets.end(); ++i_jet_orig) {
 
         // Apply jet energy correction "on the fly":
@@ -604,14 +614,16 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
         jet_jes[index] = jec; // JEC factor
 
         // p4 is already corrected!
-        auto p4 = i_jet->p4();
-        jet_pt[index]   = p4.Pt();
-        jet_eta[index]  = p4.Eta();
-        jet_phi[index]  = p4.Phi();
-        jet_E[index]    = p4.E(); 
+        //auto p4 = i_jet->p4();
+        //jet_pt[index]   = p4.Pt();
+        //jet_eta[index]  = p4.Eta();
+        //jet_phi[index]  = p4.Phi();
+        //jet_E[index]    = p4.E(); 
         
         // Matching a GenJet to this PFjet
         jet_igen[index] = 0;
+        float jet_gen_pt = -1.;
+        float jet_gen_dr = -1.;
         if (mIsMCarlo && ngen > 0) {
 
             // Index of the generated jet matching this PFjet
@@ -626,7 +638,9 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
                                                 gen_phi[gen_index]);
                 if (deltaR2 < r2min) {
                     r2min = deltaR2;
+                    jet_gen_dr = deltaR2;
                     jet_igen[index] = gen_index;
+                    jet_gen_pt = gen_pt[gen_index];
                 }
             }
         }
@@ -657,13 +671,19 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
             c2numpy_float64(&writer, pthat);
             c2numpy_float64(&writer, mcweight);
             c2numpy_intc(&writer, njet);
-            c2numpy_float64(&writer, p4.Pt());
+            c2numpy_float64(&writer, jet_pt[index]);
+            c2numpy_float64(&writer, jet_eta[index]);
+            c2numpy_float64(&writer, jet_phi[index]);
+            c2numpy_float64(&writer, jet_E[index]);
+            //c2numpy_float64(&writer, p4.Pt());
             //c2numpy_float64(&writer, p4.Pt()/jec);
-            c2numpy_float64(&writer, p4.Eta());
-            c2numpy_float64(&writer, p4.Phi());
-            c2numpy_float64(&writer, p4.E());
+            //c2numpy_float64(&writer, p4.Eta());
+            //c2numpy_float64(&writer, p4.Phi());
+            //c2numpy_float64(&writer, p4.E());
             c2numpy_float64(&writer, i_jet->jetArea());
-            c2numpy_float64(&writer, jec);	    
+            c2numpy_float64(&writer, jec);	
+            c2numpy_float64(&writer, jet_gen_pt);
+            c2numpy_float64(&writer, jet_gen_dr);    
             //c2numpy_intc(&writer, jet_ncand[index]);
 
             c2numpy_float64(&writer, chf[0]);
