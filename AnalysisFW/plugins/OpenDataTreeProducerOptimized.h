@@ -93,8 +93,7 @@ class OpenDataTreeProducerOptimized : public edm::EDAnalyzer
     double          mMinPFPt, mMinGenPt, mMaxY, mMaxEta, mMinJJMass;
     int             mGoodVtxNdof;
     double          mGoodVtxZ; 
-    edm::InputTag   mPFak5JetsName;
-    edm::InputTag   mPFak7JetsName;
+    edm::InputTag   mJetsName;
 
     
     // ---- PF Jet input tags ----- //
@@ -193,12 +192,11 @@ class OpenDataTreeProducerOptimized : public edm::EDAnalyzer
     Float_t mcweight;
 
     // Jet correction labels
-    std::string mJetCorr_ak5;
-    std::string mJetCorr_ak7;
+    std::string mJetCorr;
     
     //PF Candidates
     std::vector<float> *etas, *phis, *pts;
-    std::vector<int> *ids, *charges, *ak5indices;
+    std::vector<int> *ids, *charges, *indices;
     
     // c2numpy
     c2numpy_writer writer;
