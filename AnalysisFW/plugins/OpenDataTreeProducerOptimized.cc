@@ -294,7 +294,7 @@ void OpenDataTreeProducerOptimized::beginRun(edm::Run const &iRun,
     }
 
     // Retrieve cross section of the simulated process
-    mcweight = 0;
+    genXsec = 0;
     if (mIsMCarlo) {
 
         edm::Handle<GenRunInfoProduct> genRunInfo;
@@ -358,6 +358,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
     // Generator Info
 
     // Retrieve pthat and mcweight (only MC)
+    mcweight = 0;
     pthat = 0;
     if (mIsMCarlo && mUseGenInfo) {
         Handle< GenEventInfoProduct > hEventInfo;
