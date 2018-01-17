@@ -188,6 +188,7 @@ class OpenDataTreeProducerOptimized : public edm::EDAnalyzer
     Float_t rho;
 
     // MC variables
+    Float_t genXsec;
     Float_t pthat;
     Float_t mcweight;
 

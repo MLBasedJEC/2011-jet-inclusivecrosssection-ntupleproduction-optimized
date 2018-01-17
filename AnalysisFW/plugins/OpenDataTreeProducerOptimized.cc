@@ -171,6 +171,7 @@ void OpenDataTreeProducerOptimized::beginJob() {
     mTree->Branch("met", &met, "met/F");
     mTree->Branch("sumet", &sumet, "sumet/F");
     mTree->Branch("rho", &rho, "rho/F");
+    mTree->Branch("genXsec", &genXsec, "genXsec/F");
     mTree->Branch("pthat", &pthat, "pthat/F");
     mTree->Branch("mcweight", &mcweight, "mcweight/F");
 
@@ -215,6 +216,7 @@ void OpenDataTreeProducerOptimized::beginJob() {
     c2numpy_addcolumn(&writer, "met", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "sumet", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "rho", C2NUMPY_FLOAT64);
+    c2numpy_addcolumn(&writer, "genXsec", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "pthat", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "mcweight", C2NUMPY_FLOAT64);
     c2numpy_addcolumn(&writer, "njet", C2NUMPY_INTC);
@@ -300,7 +302,7 @@ void OpenDataTreeProducerOptimized::beginRun(edm::Run const &iRun,
 
         // Save only the cross section, since the total number of 
         // generated events is not available in this context (!!)
-        mcweight = genRunInfo->crossSection();
+        genXsec = genRunInfo->crossSection();
     }
     
 }
@@ -362,7 +364,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
         event_obj.getByLabel("generator", hEventInfo);
 
         // Monte Carlo weight (NOT AVAILABLE FOR 2011 MC!!)
-        //mcweight = hEventInfo->weight();
+        mcweight = hEventInfo->weight();
         
         // Pthat 
         if (hEventInfo->hasBinningValues()) {
@@ -477,7 +479,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
     mAssociator.produce (&*tracksInJets, allJets, allTracks);
   
     // Index of the selected jet 
-    int index = 0;
+    UInt_t index = 0;
 
     // Jet energy correction factor
     double jec = -1.0;
@@ -668,6 +670,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
             c2numpy_float64(&writer, met);
             c2numpy_float64(&writer, sumet);
             c2numpy_float64(&writer, rho);
+            c2numpy_float64(&writer, genXsec);
             c2numpy_float64(&writer, pthat);
             c2numpy_float64(&writer, mcweight);
             c2numpy_intc(&writer, njet);
