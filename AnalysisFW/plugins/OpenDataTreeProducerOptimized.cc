@@ -55,90 +55,90 @@
 #include "fastjet/contrib/SoftDrop.hh"
 
 OpenDataTreeProducerOptimized::OpenDataTreeProducerOptimized(edm::ParameterSet const &cfg) {
-  mMinPFPt           = cfg.getParameter<double>                    ("minPFPt");
-  mMinJJMass         = cfg.getParameter<double>                    ("minJJMass");
-  mMaxY              = cfg.getParameter<double>                    ("maxY");
-  mMaxEta            = cfg.getParameter<double>                    ("maxEta");
-  mMinNPFJets        = cfg.getParameter<int>                       ("minNPFJets");
-  mMaxRows           = cfg.getUntrackedParameter<int>              ("maxRows",1000000);
-  mJetsName          = cfg.getParameter<edm::InputTag>             ("jets");
-  mOfflineVertices   = cfg.getParameter<edm::InputTag>             ("offlineVertices");
-  mGoodVtxNdof       = cfg.getParameter<double>                    ("goodVtxNdof");
-  mGoodVtxZ          = cfg.getParameter<double>                    ("goodVtxZ");
-  mSrcPFRho          = cfg.getParameter<edm::InputTag>             ("srcPFRho");
-  mPFMET             = cfg.getParameter<edm::InputTag>             ("pfmet");
-  mGenJetsName       = cfg.getUntrackedParameter<edm::InputTag>    ("genjets",edm::InputTag(""));
-  mGenParticles      = cfg.getUntrackedParameter<edm::InputTag>    ("genparticles",edm::InputTag(""));
-  mPrintTriggerMenu  = cfg.getUntrackedParameter<bool>             ("printTriggerMenu",false);
-  mIsMCarlo          = cfg.getUntrackedParameter<bool>             ("isMCarlo",false);
-  mUseGenInfo        = cfg.getUntrackedParameter<bool>             ("useGenInfo",false);
-  mMinGenPt          = cfg.getUntrackedParameter<double>           ("minGenPt",30);
-  processName_       = cfg.getParameter<std::string>               ("processName");
-  triggerNames_      = cfg.getParameter<std::vector<std::string> > ("triggerNames");
-  triggerResultsTag_ = cfg.getParameter<edm::InputTag>             ("triggerResults");
-  mJetCorr           = cfg.getParameter<std::string>               ("jetCorr");
-  pfCandidates_ = cfg.getParameter<edm::InputTag>                  ("pfCandidates");
+    mMinPFPt           = cfg.getParameter<double>                    ("minPFPt");
+    mMinJJMass         = cfg.getParameter<double>                    ("minJJMass");
+    mMaxY              = cfg.getParameter<double>                    ("maxY");
+    mMaxEta            = cfg.getParameter<double>                    ("maxEta");
+    mMinNPFJets        = cfg.getParameter<int>                       ("minNPFJets");
+    mMaxRows           = cfg.getUntrackedParameter<int>              ("maxRows",1000000);
+    mJetsName          = cfg.getParameter<edm::InputTag>             ("jets");
+    mOfflineVertices   = cfg.getParameter<edm::InputTag>             ("offlineVertices");
+    mGoodVtxNdof       = cfg.getParameter<double>                    ("goodVtxNdof");
+    mGoodVtxZ          = cfg.getParameter<double>                    ("goodVtxZ");
+    mSrcPFRho          = cfg.getParameter<edm::InputTag>             ("srcPFRho");
+    mPFMET             = cfg.getParameter<edm::InputTag>             ("pfmet");
+    mGenJetsName       = cfg.getUntrackedParameter<edm::InputTag>    ("genjets",edm::InputTag(""));
+    mGenParticles      = cfg.getUntrackedParameter<edm::InputTag>    ("genparticles",edm::InputTag(""));
+    mPrintTriggerMenu  = cfg.getUntrackedParameter<bool>             ("printTriggerMenu",false);
+    mIsMCarlo          = cfg.getUntrackedParameter<bool>             ("isMCarlo",false);
+    mUseGenInfo        = cfg.getUntrackedParameter<bool>             ("useGenInfo",false);
+    mMinGenPt          = cfg.getUntrackedParameter<double>           ("minGenPt",30);
+    processName_       = cfg.getParameter<std::string>               ("processName");
+    triggerNames_      = cfg.getParameter<std::vector<std::string> > ("triggerNames");
+    triggerResultsTag_ = cfg.getParameter<edm::InputTag>             ("triggerResults");
+    mJetCorr           = cfg.getParameter<std::string>               ("jetCorr");
+    pfCandidates_ = cfg.getParameter<edm::InputTag>                  ("pfCandidates");
 
 
   
-  measureDefinition_ = 0; //CMS default is normalized measure
-  beta_ = 1.0; //CMS default is 1
-  R0_ = 0.7; // CMS default is jet cone size
-  Rcutoff_ = -999.0; // not used by default
-  // variables for axes definition
-  axesDefinition_ = 6; // CMS default is 1-pass KT axes
-  nPass_ = -999; // not used by default
-  akAxesR0_ = -999.0; // not used by default
-  // for softdrop
-  zCut_ = 0.1;
-    
-  // Get the measure definition
-  fastjet::contrib::NormalizedMeasure          normalizedMeasure        (beta_,R0_);
-  fastjet::contrib::UnnormalizedMeasure        unnormalizedMeasure      (beta_);
-  fastjet::contrib::GeometricMeasure           geometricMeasure         (beta_);
-  fastjet::contrib::NormalizedCutoffMeasure    normalizedCutoffMeasure  (beta_,R0_,Rcutoff_);
-  fastjet::contrib::UnnormalizedCutoffMeasure  unnormalizedCutoffMeasure(beta_,Rcutoff_);
-  fastjet::contrib::GeometricCutoffMeasure     geometricCutoffMeasure   (beta_,Rcutoff_);
+    measureDefinition_ = 0; //CMS default is normalized measure
+    beta_ = 1.0; //CMS default is 1
+    R0_ = 0.7; // CMS default is jet cone size
+    Rcutoff_ = -999.0; // not used by default
+    // variables for axes definition
+    axesDefinition_ = 6; // CMS default is 1-pass KT axes
+    nPass_ = -999; // not used by default
+    akAxesR0_ = -999.0; // not used by default
+    // for softdrop
+    zCut_ = 0.1;
 
-  fastjet::contrib::MeasureDefinition const * measureDef = 0;
-  switch ( measureDefinition_ ) {
-  case UnnormalizedMeasure : measureDef = &unnormalizedMeasure; break;
-  case GeometricMeasure    : measureDef = &geometricMeasure; break;
-  case NormalizedCutoffMeasure : measureDef = &normalizedCutoffMeasure; break;
-  case UnnormalizedCutoffMeasure : measureDef = &unnormalizedCutoffMeasure; break;
-  case GeometricCutoffMeasure : measureDef = &geometricCutoffMeasure; break;
-  case NormalizedMeasure : default : measureDef = &normalizedMeasure; break;
-  } 
+    // Get the measure definition
+    fastjet::contrib::NormalizedMeasure          normalizedMeasure        (beta_,R0_);
+    fastjet::contrib::UnnormalizedMeasure        unnormalizedMeasure      (beta_);
+    fastjet::contrib::GeometricMeasure           geometricMeasure         (beta_);
+    fastjet::contrib::NormalizedCutoffMeasure    normalizedCutoffMeasure  (beta_,R0_,Rcutoff_);
+    fastjet::contrib::UnnormalizedCutoffMeasure  unnormalizedCutoffMeasure(beta_,Rcutoff_);
+    fastjet::contrib::GeometricCutoffMeasure     geometricCutoffMeasure   (beta_,Rcutoff_);
 
-  // Get the axes definition
-  fastjet::contrib::KT_Axes             kt_axes; 
-  fastjet::contrib::CA_Axes             ca_axes; 
-  fastjet::contrib::AntiKT_Axes         antikt_axes   (akAxesR0_);
-  fastjet::contrib::WTA_KT_Axes         wta_kt_axes; 
-  fastjet::contrib::WTA_CA_Axes         wta_ca_axes; 
-  fastjet::contrib::OnePass_KT_Axes     onepass_kt_axes;
-  fastjet::contrib::OnePass_CA_Axes     onepass_ca_axes;
-  fastjet::contrib::OnePass_AntiKT_Axes onepass_antikt_axes   (akAxesR0_);
-  fastjet::contrib::OnePass_WTA_KT_Axes onepass_wta_kt_axes;
-  fastjet::contrib::OnePass_WTA_CA_Axes onepass_wta_ca_axes;
-  fastjet::contrib::MultiPass_Axes      multipass_axes (nPass_);
+    fastjet::contrib::MeasureDefinition const * measureDef = 0;
+    switch ( measureDefinition_ ) {
+        case UnnormalizedMeasure : measureDef = &unnormalizedMeasure; break;
+        case GeometricMeasure    : measureDef = &geometricMeasure; break;
+        case NormalizedCutoffMeasure : measureDef = &normalizedCutoffMeasure; break;
+        case UnnormalizedCutoffMeasure : measureDef = &unnormalizedCutoffMeasure; break;
+        case GeometricCutoffMeasure : measureDef = &geometricCutoffMeasure; break;
+        case NormalizedMeasure : default : measureDef = &normalizedMeasure; break;
+    } 
 
-  fastjet::contrib::AxesDefinition const * axesDef = 0;
-  switch ( axesDefinition_ ) {
-  case  KT_Axes : default : axesDef = &kt_axes; break;
-  case  CA_Axes : axesDef = &ca_axes; break; 
-  case  AntiKT_Axes : axesDef = &antikt_axes; break;
-  case  WTA_KT_Axes : axesDef = &wta_kt_axes; break; 
-  case  WTA_CA_Axes : axesDef = &wta_ca_axes; break; 
-  case  OnePass_KT_Axes : axesDef = &onepass_kt_axes; break;
-  case  OnePass_CA_Axes : axesDef = &onepass_ca_axes; break; 
-  case  OnePass_AntiKT_Axes : axesDef = &onepass_antikt_axes; break;
-  case  OnePass_WTA_KT_Axes : axesDef = &onepass_wta_kt_axes; break; 
-  case  OnePass_WTA_CA_Axes : axesDef = &onepass_wta_ca_axes; break; 
-  case  MultiPass_Axes : axesDef = &multipass_axes; break;
-  };
+    // Get the axes definition
+    fastjet::contrib::KT_Axes             kt_axes; 
+    fastjet::contrib::CA_Axes             ca_axes; 
+    fastjet::contrib::AntiKT_Axes         antikt_axes   (akAxesR0_);
+    fastjet::contrib::WTA_KT_Axes         wta_kt_axes; 
+    fastjet::contrib::WTA_CA_Axes         wta_ca_axes; 
+    fastjet::contrib::OnePass_KT_Axes     onepass_kt_axes;
+    fastjet::contrib::OnePass_CA_Axes     onepass_ca_axes;
+    fastjet::contrib::OnePass_AntiKT_Axes onepass_antikt_axes   (akAxesR0_);
+    fastjet::contrib::OnePass_WTA_KT_Axes onepass_wta_kt_axes;
+    fastjet::contrib::OnePass_WTA_CA_Axes onepass_wta_ca_axes;
+    fastjet::contrib::MultiPass_Axes      multipass_axes (nPass_);
 
-  routine_ = std::auto_ptr<fastjet::contrib::Njettiness> ( new fastjet::contrib::Njettiness( *axesDef, *measureDef ) );
+    fastjet::contrib::AxesDefinition const * axesDef = 0;
+    switch ( axesDefinition_ ) {
+        case  KT_Axes : default : axesDef = &kt_axes; break;
+        case  CA_Axes : axesDef = &ca_axes; break; 
+        case  AntiKT_Axes : axesDef = &antikt_axes; break;
+        case  WTA_KT_Axes : axesDef = &wta_kt_axes; break; 
+        case  WTA_CA_Axes : axesDef = &wta_ca_axes; break; 
+        case  OnePass_KT_Axes : axesDef = &onepass_kt_axes; break;
+        case  OnePass_CA_Axes : axesDef = &onepass_ca_axes; break; 
+        case  OnePass_AntiKT_Axes : axesDef = &onepass_antikt_axes; break;
+        case  OnePass_WTA_KT_Axes : axesDef = &onepass_wta_kt_axes; break; 
+        case  OnePass_WTA_CA_Axes : axesDef = &onepass_wta_ca_axes; break; 
+        case  MultiPass_Axes : axesDef = &multipass_axes; break;
+    };
+
+    routine_ = std::auto_ptr<fastjet::contrib::Njettiness> ( new fastjet::contrib::Njettiness( *axesDef, *measureDef ) );
   
 }
 
@@ -256,8 +256,8 @@ void OpenDataTreeProducerOptimized::beginJob() {
 }
 
 void OpenDataTreeProducerOptimized::endJob() {
-  // c2numpy
-  c2numpy_close(&writer);
+    // c2numpy
+    c2numpy_close(&writer);
 }
 
 
@@ -365,7 +365,9 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
         event_obj.getByLabel("generator", hEventInfo);
 
         // Monte Carlo weight (NOT AVAILABLE FOR 2011 MC!!)
-        mcweight = hEventInfo->weight();
+        // For some reason the weight() function in CMSSW_5_3_32 (2012 MC) isn't working
+        vector<double> myweights = hEventInfo->weights();
+        mcweight = std::accumulate(myweights.begin(), myweights.end(),1., std::multiplies<double>());
         
         // Pthat 
         if (hEventInfo->hasBinningValues()) {
@@ -409,41 +411,41 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
 
             // pT, rapidity selection
             if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY && fabs(i_gen->eta()) < mMaxEta) {
-	      //pdg id selection; for now save only W
-	      //if (abs(i_gen->pdgId()) == 24) {
-	      genparticle_pt[gen_index] = i_gen->pt();
-	      genparticle_eta[gen_index] = i_gen->eta();
-	      genparticle_phi[gen_index] = i_gen->phi();
-	      genparticle_E[gen_index] = i_gen->energy();
-	      genparticle_id[gen_index] = i_gen->pdgId();
-	      genparticle_status[gen_index] = i_gen->status();
-	      genparticle_dauId1[gen_index] = -1;
-	      genparticle_dauId2[gen_index] = -1;
-	      genparticle_dauDR[gen_index] = -1;
-	      if (abs(i_gen->pdgId()) == 24) {		
-		//std::cout << i_gen->pdgId() << std::endl;
-		unsigned n = i_gen->numberOfDaughters();
-		if (n>=2) {		  
-		  const Candidate * d1 = i_gen->daughter( 0 );
-		  const Candidate * d2 = i_gen->daughter( 1 );
-		  int dauId1 = d1->pdgId();	  
-		  int dauId2 = d2->pdgId();	  
-		  genparticle_dauId1[gen_index] = dauId1;
-		  genparticle_dauId2[gen_index] = dauId2;
-		  genparticle_dauDR[gen_index] = reco::deltaR( d1->eta(),
-							       d1->phi(),
-							       d2->eta(),
-							       d2->phi());
-		}
-		// for(unsigned j = 0; j < n; ++ j) {
-		//   const Candidate * d = i_gen->daughter( j );
-		//   int dauId = d->pdgId();	  
-		//   genparticle_dauId1[gen_index] = dauId;
-		// }
-	      }	      
-	      gen_index++;
-	    }
-	}	
+	           //pdg id selection; for now save only W
+	           //if (abs(i_gen->pdgId()) == 24) {
+	           genparticle_pt[gen_index] = i_gen->pt();
+                genparticle_eta[gen_index] = i_gen->eta();
+                genparticle_phi[gen_index] = i_gen->phi();
+                genparticle_E[gen_index] = i_gen->energy();
+                genparticle_id[gen_index] = i_gen->pdgId();
+                genparticle_status[gen_index] = i_gen->status();
+                genparticle_dauId1[gen_index] = -1;
+                genparticle_dauId2[gen_index] = -1;
+                genparticle_dauDR[gen_index] = -1;
+                if (abs(i_gen->pdgId()) == 24) {		
+		            //std::cout << i_gen->pdgId() << std::endl;
+                    unsigned n = i_gen->numberOfDaughters();
+                    if (n>=2) {		  
+                        const Candidate * d1 = i_gen->daughter( 0 );
+                        const Candidate * d2 = i_gen->daughter( 1 );
+                        int dauId1 = d1->pdgId();	  
+                        int dauId2 = d2->pdgId();	  
+                        genparticle_dauId1[gen_index] = dauId1;
+                        genparticle_dauId2[gen_index] = dauId2;
+                        genparticle_dauDR[gen_index] = reco::deltaR( d1->eta(),
+                                                                    d1->phi(),
+                                                                    d2->eta(),
+                                                                    d2->phi());
+                    }
+		          // for(unsigned j = 0; j < n; ++ j) {
+		          //   const Candidate * d = i_gen->daughter( j );
+		          //   int dauId = d->pdgId();	  
+		          //   genparticle_dauId1[gen_index] = dauId;
+		          // }
+                }	      
+	           gen_index++;
+	        }
+	    }	
         // Number of generated particles in this event
         ngenparticles = gen_index;
     }
@@ -466,21 +468,23 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
     // format inputs
     std::vector <edm::RefToBase<reco::Jet> > allJets;
     allJets.reserve (jet_handle->size());
-    for (unsigned i = 0; i < jet_handle->size(); ++i)
-    {
-      edm::RefToBase<reco::Jet> jetRef(edm::Ref<reco::PFJetCollection>(jet_handle, i));
-      allJets.push_back(jetRef);
+    for (unsigned i = 0; i < jet_handle->size(); ++i) {
+        edm::RefToBase<reco::Jet> jetRef(edm::Ref<reco::PFJetCollection>(jet_handle, i));
+        allJets.push_back(jetRef);
     }
     std::vector <reco::TrackRef> allTracks;
     allTracks.reserve(tracks_h->size());
     for (unsigned i = 0; i < tracks_h->size(); ++i) 
-      allTracks.push_back (reco::TrackRef(tracks_h, i));
+        allTracks.push_back (reco::TrackRef(tracks_h, i));
     // run JTA algorithm
     JetTracksAssociationDRVertex mAssociator(0.5); // passed argument: 0.5 cone size
     mAssociator.produce (&*tracksInJets, allJets, allTracks);
   
     // Index of the selected jet 
     UInt_t index = 0;
+
+    //counter for the selected jets
+    njet = 0;
 
     // Jet energy correction factor
     double jec = -1.0;
@@ -501,10 +505,14 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
         // Multiply pT by -1 in order to have largest pT jet first (sorted in ascending order by default)
         sortedJets.insert(std::pair<double, std::pair<reco::PFJetCollection::const_iterator, double> >(-1 * i_jet_orig->pt() * jec, std::pair<reco::PFJetCollection::const_iterator, double>(i_jet_orig, jec)));
         index++;
+        if (fabs(i_jet_orig->y()) < mMaxY && (i_jet_orig->pt()) > mMinPFPt && fabs(i_jet_orig->eta()) < mMaxEta ) {
+            njet++;
+        }
     }
 
-    // // Iterate over the jets (sorted in pT) of the event
+    //Set the number of jets equal to all jets in the event
     index = 0;
+    // // Iterate over the jets (sorted in pT) of the event
     for (auto i_jet_orig = sortedJets.begin(); i_jet_orig != sortedJets.end(); ++i_jet_orig) {
 
         // Apply jet energy correction "on the fly":
@@ -520,9 +528,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
         const PFJet* i_jet = &corjet;
 
         // Skip the current iteration if jet is not selected
-        if (fabs(i_jet->y()) > mMaxY || 
-            (i_jet->pt()) < mMinPFPt ||
-    	    fabs(i_jet->eta()) > mMaxEta ) {
+        if (fabs(i_jet->y()) > mMaxY || (i_jet->pt()) < mMinPFPt || fabs(i_jet->eta()) > mMaxEta ) {
             continue;
         }
 
@@ -716,7 +722,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
 
 
         } 
-    index++;
+        index++;
     }
     // Number of selected jets in the event
     njet = index;    
@@ -730,7 +736,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
 
     // Finally, fill the tree
     if ( njet >= (unsigned)mMinNPFJets ) {            
-            mTree->Fill();
+        mTree->Fill();
     }
 
     // clean up here
