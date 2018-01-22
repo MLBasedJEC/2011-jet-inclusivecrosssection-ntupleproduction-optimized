@@ -454,6 +454,12 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
     Handle<reco::VertexCollection> recVtxs;
     event_obj.getByLabel(mOfflineVertices, recVtxs);
 
+    // MET
+    Handle< PFMETCollection > met_handle;
+    event_obj.getByLabel("pfMet", met_handle);
+
+    met = (*met_handle)[0].et();
+    sumet = (*met_handle)[0].sumEt();
 
     // PF Jets
 
@@ -726,13 +732,6 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
     }
     // Number of selected jets in the event
     njet = index;    
-
-    // MET
-    Handle< PFMETCollection > met_handle;
-    event_obj.getByLabel("pfMet", met_handle);
-
-    met = (*met_handle)[0].et();
-    sumet = (*met_handle)[0].sumEt();
 
     // Finally, fill the tree
     if ( njet >= (unsigned)mMinNPFJets ) {            
