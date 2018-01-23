@@ -24,23 +24,27 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 # Global CRAB3 settings
-config.General.requestName = 'OpenDataTree_all'
+config.General.requestName = 'OpenDataTree_QCDFlat'
 config.General.workArea = 'crab_projects_retry'
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'OpenDataTreeProducer_mcPAT_2011_cfg.py'
+config.JobType.psetName = 'OpenDataTreeProducerOptimized_mcPAT_2012_cfg.py'
+config.JobType.outputFiles = ['ak5PFJetsParams0.npy','ak7PFJetsParams0.npy']
+#config.JobType.inputFiles = ['/uscms_data/d2/aperloff/YOURWORKINGAREA/MLJEC/CMSSW_5_3_32/src/fastjet-contrib/lib/']
+config.JobType.sendExternalFolder = True
 
 config.Data.inputDBS = 'global'
-config.Data.splitting = 'EventAwareLumiBased' #'FileBased'
-config.Data.outLFNDirBase = '/store/group/phys_smp/mhaapale/'
+config.Data.splitting = 'FileBased' #'EventAwareLumiBased'
+config.Data.outLFNDirBase = '/store/group/lpcjme/noreplica/'
 config.Data.publication = False
+config.Data.ignoreLocality = True
 
-config.Data.totalUnits = 1000000    # appr. number of events
-config.Data.unitsPerJob = 40000     # appr. events per job
+config.Data.totalUnits = -1         # appr. number of events
+config.Data.unitsPerJob = 2     # appr. events per job
 
-config.Site.storageSite = 'T2_CH_CERN'
+config.Site.storageSite = 'T3_US_FNALLPC'
 
 
 # The following chunk was taken from:
@@ -55,8 +59,8 @@ if __name__ == '__main__':
     # Helper functions
     def submit(config):
         try:
-            crabCommand('submit', config = config)
-            #crabCommand('submit', config = config, dryrun = True) # Debug purposes
+            #crabCommand('submit', config = config)
+            crabCommand('submit', config = config, dryrun = True) # Debug purposes
         except HTTPException as hte:
             print "Failed submitting task: %s" % (hte.headers)
         except ClientException as cle:
@@ -65,29 +69,16 @@ if __name__ == '__main__':
     def extractName(dataset):
         # Return shorter dataset name, e.g. "pthat_15to30"
         import re
-        m = re.search('QCD_Pt-(\d+to\d+)_TuneZ2_7TeV_pythia6', dataset.split('/')[1])
+        m = re.search('QCD_Pt-(\d+to\d+)_TuneZ2star_Flat_8TeV_pythia6', dataset.split('/')[1])
         return "pthat_" + m.group(1)
 
 
     # Loop over MC datasets
-    for dataset in [#'/QCD_Pt-0to5_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    #,'/QCD_Pt-5to15_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                     '/QCD_Pt-15to30_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-30to50_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-50to80_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-80to120_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-120to170_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-170to300_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-300to470_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-470to600_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-600to800_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ,'/QCD_Pt-800to1000_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    #,'/QCD_Pt-1000to1400_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    #,'/QCD_Pt-1400to1800_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    #,'/QCD_Pt-1800_TuneZ2_7TeV_pythia6/Summer11LegDR-PU_S13_START53_LV6-v1/AODSIM'
-                    ]:
+    for dataset in ['/QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6/Summer12_DR53X-NoPileUp_START53_V7N-v1/AODSIM']:
 
-        config.Data.inputDataset = dataset
+        #config.Data.inputDataset = dataset
+        config.Data.userInputFiles = open('CMS_MonteCarlo2012_Summer12_DR53X_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_AODSIM_NoPileUp_START53_V7N-v1_combined_file_index.txt').readlines()
+        config.Data.outputPrimaryDataset = 'QCD_Pt-15to3000_Flat_8TeV_NoPileUp_v1'
         config.General.requestName = extractName(dataset)
 
 
