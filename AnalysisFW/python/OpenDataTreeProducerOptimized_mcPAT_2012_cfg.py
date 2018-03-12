@@ -48,7 +48,7 @@ process.load("JetMETCorrections.Configuration.JetCorrectionServicesAllAlgos_cff"
 ################### EDAnalyzer ##############################3
 algsize = {'ak':[5,7]} #Options: ak
 jettype = ['PF'] #Options: PF, PFchs, PFPuppi
-corrs = ['L1Fast','L2L3'] #Options: L1Fast, L2L3, L2L3Residual
+corrs = ['L2L3'] #Options: L1Fast, L2L3, L2L3Residual
 jetCollections = []
 jetCorrections = []
 for k, v in algsize.iteritems():

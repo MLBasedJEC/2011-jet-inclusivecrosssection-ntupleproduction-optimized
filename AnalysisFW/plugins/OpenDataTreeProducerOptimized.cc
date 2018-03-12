@@ -509,7 +509,8 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
         // take jet energy correction and get corrected pT
         jec = corrector->correction(*i_jet_orig, event_obj, iSetup);
         // Multiply pT by -1 in order to have largest pT jet first (sorted in ascending order by default)
-        sortedJets.insert(std::pair<double, std::pair<reco::PFJetCollection::const_iterator, double> >(-1 * i_jet_orig->pt() * jec, std::pair<reco::PFJetCollection::const_iterator, double>(i_jet_orig, jec)));
+        //sortedJets.insert(std::pair<double, std::pair<reco::PFJetCollection::const_iterator, double> >(-1 * i_jet_orig->pt() * jec, std::pair<reco::PFJetCollection::const_iterator, double>(i_jet_orig, jec)));
+        sortedJets.insert(std::pair<double, std::pair<reco::PFJetCollection::const_iterator, double> >(-1 * i_jet_orig->pt(), std::pair<reco::PFJetCollection::const_iterator, double>(i_jet_orig, jec)));
         index++;
         if (fabs(i_jet_orig->y()) < mMaxY && (i_jet_orig->pt()) > mMinPFPt && fabs(i_jet_orig->eta()) < mMaxEta ) {
             njet++;
@@ -696,7 +697,7 @@ void OpenDataTreeProducerOptimized::analyze(edm::Event const &event_obj,
             //c2numpy_float64(&writer, p4.Eta());
             //c2numpy_float64(&writer, p4.Phi());
             //c2numpy_float64(&writer, p4.E());
-            c2numpy_float64(&writer, i_jet->jetArea());
+            c2numpy_float64(&writer, jet_area[index]);
             c2numpy_float64(&writer, jec);	
             c2numpy_float64(&writer, jet_gen_pt);
             c2numpy_float64(&writer, jet_gen_dr);    
